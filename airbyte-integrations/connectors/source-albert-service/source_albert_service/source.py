@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
 
+from datetime import datetime, timedelta
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -197,19 +198,33 @@ class SourceAlbertService(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = NoAuth()  
-        return [ExchangeRates(authenticator=auth, config=config)]
+        auth = NoAuth()
+        start_date = datetime.strptime(config['start_date'], '%Y-%m-%d')
+        return [ExchangeRates(authenticator=auth, config=config, start_date=start_date)]
 
 class ExchangeRates(HttpStream):
     url_base = "https://api.apilayer.com/exchangerates_data/"
 
-    # Set this as a noop.
-    primary_key = None
+    cursor_field = "date"
+    primary_key = "date"
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
+    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
         super().__init__()
         self.base = config['base']
         self.access_key = config['access_key']
+        self.start_date = start_date
+        self._cursor_value = None
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
+        else:
+            return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
+    
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = datetime.strptime(value[self.cursor_field], '%Y-%m-%d')
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
@@ -222,7 +237,7 @@ class ExchangeRates(HttpStream):
         next_page_token: Mapping[str, Any] = None
     ) -> str:
         # The "/latest" path gives us the latest currency exchange rates
-        return "latest"
+        return stream_slice['date']
 
     def request_params(
             self,
@@ -249,3 +264,28 @@ class ExchangeRates(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         return [response.json()]
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            if self._cursor_value:
+                latest_record_date = datetime.strptime(record[self.cursor_field], '%Y-%m-%d')                
+                self._cursor_value = max(self._cursor_value, latest_record_date)
+            else:
+                self._cursor_value = datetime.strptime(self.start_date.strftime('%Y-%m-%d'), '%Y-%m-%d')
+
+            yield record
+
+    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
+        """
+        Returns a list of each day between the start date and now.
+        The return value is a list of dicts {'date': date_string}.
+        """
+        dates = []
+        while start_date < datetime.now():
+            dates.append({self.cursor_field: start_date.strftime('%Y-%m-%d')})
+            start_date += timedelta(days=1)
+        return dates
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%d') if stream_state and self.cursor_field in stream_state else self.start_date
+        return self._chunk_date_range(start_date)

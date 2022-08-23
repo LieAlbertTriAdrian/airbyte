@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
 
@@ -202,7 +203,7 @@ class SourceAlbertService(AbstractSource):
         start_date = datetime.strptime(config['start_date'], '%Y-%m-%d')
         return [ExchangeRates(authenticator=auth, config=config, start_date=start_date)]
 
-class ExchangeRates(HttpStream):
+class ExchangeRates(HttpStream, IncrementalMixin):
     url_base = "https://api.apilayer.com/exchangerates_data/"
 
     cursor_field = "date"

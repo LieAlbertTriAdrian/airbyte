@@ -1187,3 +1187,10 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/elasticsearch
   sourceType: api
   releaseStage: alpha
+# - name: AlbertCustomAlpha
+#   sourceDefinitionId: d06fc4da-3c00-4c8e-9d87-6ccecbcd7803
+#   dockerRepository: airbyte/source-albert-service
+#   dockerImageTag: dev
+#   documentationUrl: https://docs.airbyte.io/integrations/sources/albert-service
+#   sourceType: api
+#   releaseStage: alpha

@@ -181,71 +181,71 @@ class Employees(IncrementalAlbertServiceStream):
 
 
 # Source
-# class SourceAlbertService(AbstractSource):
-#     def check_connection(self, logger, config) -> Tuple[bool, any]:
-#         accepted_currencies = {"USD", "JPY", "BGN", "CZK", "DKK"}  # assume these are the only allowed currencies
-#         input_currency = config['base']
-#         if input_currency not in accepted_currencies:
-#             return False, f"Input currency {input_currency} is invalid. Please input one of the following currencies: {accepted_currencies}"
-#         else:
-#             return True, None
+class SourceAlbertService(AbstractSource):
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        accepted_currencies = {"USD", "JPY", "BGN", "CZK", "DKK"}  # assume these are the only allowed currencies
+        input_currency = config['base']
+        if input_currency not in accepted_currencies:
+            return False, f"Input currency {input_currency} is invalid. Please input one of the following currencies: {accepted_currencies}"
+        else:
+            return True, None
 
-#     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-#         """
-#         TODO: Replace the streams below with your own streams.
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """
+        TODO: Replace the streams below with your own streams.
 
-#         :param config: A Mapping of the user input configuration as defined in the connector spec.
-#         """
-#         # TODO remove the authenticator if not required.
-#         auth = NoAuth()  
-#         return [ExchangeRates(authenticator=auth, config=config)]
+        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        """
+        # TODO remove the authenticator if not required.
+        auth = NoAuth()  
+        return [ExchangeRates(authenticator=auth, config=config)]
 
-# class ExchangeRates(HttpStream):
-#     url_base = "http://api.exchangeratesapi.io/"
+class ExchangeRates(HttpStream):
+    url_base = "https://api.apilayer.com/exchangerates_data/"
 
-#     # Set this as a noop.
-#     primary_key = None
+    # Set this as a noop.
+    primary_key = None
 
-#     def __init__(self, config: Mapping[str, Any], **kwargs):
-#         super().__init__()
-#         self.base = config['base']
-#         self.access_key = config['access_key']
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+        self.base = config['base']
+        self.access_key = config['access_key']
 
-#     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-#         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
-#         return None
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # The API does not offer pagination, so we return None to indicate there are no more pages in the response
+        return None
 
-#     def path(
-#         self, 
-#         stream_state: Mapping[str, Any] = None, 
-#         stream_slice: Mapping[str, Any] = None, 
-#         next_page_token: Mapping[str, Any] = None
-#     ) -> str:
-#         # The "/latest" path gives us the latest currency exchange rates
-#         return "latest"
+    def path(
+        self, 
+        stream_state: Mapping[str, Any] = None, 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        # The "/latest" path gives us the latest currency exchange rates
+        return "latest"
 
-#     def request_params(
-#             self,
-#             stream_state: Mapping[str, Any],
-#             stream_slice: Mapping[str, Any] = None,
-#             next_page_token: Mapping[str, Any] = None,
-#     ) -> MutableMapping[str, Any]:
-#         # The api requires that we include access_key as a query param so we do that in this method
-#         return {'access_key': self.access_key, 'base': self.base}        
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        # The api requires that we include access_key as a query param so we do that in this method
+        return {'base': self.base}        
 
-#     def request_headers(
-#         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-#     ) -> Mapping[str, Any]:
-#         """
-#         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
-#         """
-#         return {'apikey': self.access_key}
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        """
+        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        """
+        return {'apikey': self.access_key}
 
-#     def parse_response(
-#         self,
-#         response: requests.Response,
-#         stream_state: Mapping[str, Any],
-#         stream_slice: Mapping[str, Any] = None,
-#         next_page_token: Mapping[str, Any] = None,
-#     ) -> Iterable[Mapping]:
-#         return [response.json()]
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        return [response.json()]

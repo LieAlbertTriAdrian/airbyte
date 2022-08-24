@@ -9,7 +9,13 @@ For information about how to use this connector within Airbyte, see [the documen
 cd airbyte-integrations/connector-templates/generator 
 ./generate.sh
 ```
-2. 
+2. Create a dev environment
+```
+cd ../../connectors/source-surveycto
+python3 -m venv .venv # Create a virtual environment in the .venv directory
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## Local development
 

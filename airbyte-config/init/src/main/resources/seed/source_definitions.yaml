@@ -1192,6 +1192,7 @@
   dockerRepository: airbyte/source-albert-service
   dockerImageTag: dev
   documentationUrl: https://docs.airbyte.io/integrations/sources/albert-service
+  icon: spc.svg
   sourceType: api
   releaseStage: alpha
 - name: Surveycto
@@ -1199,5 +1200,6 @@
   dockerRepository: airbyte/source-surveycto
   dockerImageTag: dev
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveycto
+  icon: surveycto.svg
   sourceType: api
   releaseStage: alpha

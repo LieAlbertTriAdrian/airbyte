@@ -3,5 +3,6 @@
   "name": "AlbertCustomAlpha",
   "dockerRepository": "airbyte/source-albert-service",
   "dockerImageTag": "dev",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/albert-io"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/albert-io",
+  "icon": "spc.svg"
 }

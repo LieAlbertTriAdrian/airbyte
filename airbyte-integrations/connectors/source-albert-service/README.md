@@ -1,7 +1,11 @@
 # Albert Service Source
 
 ## For showing the connector in the UI
-`VERSION=dev docker-compose up` without `dev`, it won't sshow up automatically
+in connector directory: `docker build . -t airbyte/source-albert-service:dev`
+
+in root directory of airbyte/airbyte: 
+- `SUB_BUILD=PLATFORM ./gradlew build`
+- `VERSION=dev docker-compose up` without `dev`, it won't sshow up automatically
 
 This is the repository for the Albert Service source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/albert-service).

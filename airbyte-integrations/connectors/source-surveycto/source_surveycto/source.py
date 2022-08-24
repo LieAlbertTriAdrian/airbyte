@@ -43,10 +43,11 @@ class SurveyctoStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        print("PARSE RESPONSEEEEEEEE")
-
-        print("RESPONSE", response)
-        return [response.json()]
+        return [
+            {
+                'data': response.json()
+            }
+        ]
 
     # @TODO: Refactor this path method into a separate FormClass for cleaner
     def path(
